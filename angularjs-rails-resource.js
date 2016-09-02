@@ -1277,6 +1277,8 @@
                 RailsResource.$http = function (httpConfig, context, resourceConfigOverrides) {
                     var config = angular.extend(angular.copy(this.config), resourceConfigOverrides || {}),
                         resourceConstructor = config.resourceConstructor,
+                        requestCanceler = $q.defer(),
+                        httpConfig = angular.extend({timeout: requestCanceler.promise}, httpConfig),
                         promise = $q.when(httpConfig);
 
                     if (!config.skipRequestProcessing) {
@@ -1342,6 +1344,7 @@
                     promise = this.runInterceptorPhase('afterResponse', context, promise);
                     promise.resource = config.resourceConstructor;
                     promise.context = context;
+                    promise.abort = function() { return requestCanceler.resolve(); }
                     return promise;
                 };
 
